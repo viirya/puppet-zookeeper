@@ -1,0 +1,32 @@
+{
+  "project_page": "https://github.com/viirya/puppet-zookeeper",
+  "description": "This module deploys Apache Zookeeper in a clustered setup.",
+  "summary": "Install Apache Zookeeper cluster.",
+  "source": "UNKNOWN",
+  "version": "0.0.1",
+  "types": [
+
+  ],
+  "checksums": {
+    "tests/init.pp": "f8f7d7631f8c82d2f068acdb95bf5011",
+    "README.md": "0485ae9dd26554c259c7a18141ab8f4e",
+    "spec/spec_helper.rb": "ca19ec4f451ebc7fdb035b52eae6e909",
+    "templates/home/bashrc.erb": "a9f0c3157061f75158f904df3fb20e32",
+    "manifests/cluster.pp": "8b1a20f869de46adf7cad745c8b79513",
+    "templates/conf/zoo.cfg": "ecd5f4f05ad4f366ca88fb768096f2d3",
+    "spec/spec.opts": "a600ded995d948e393fbe2320ba8e51c",
+    "Modulefile": "a86c94b3d0463fd2e24cb24f7380a1f4",
+    "LICENSE": "e37441572d2f74ca884c994b6a9c8834",
+    "manifests/params.pp": "4e2c5fc470159cba79547570d1a1e323",
+    "manifests/init.pp": "92a7620c447720947d86a25f4112e88d"
+  },
+  "license": "MIT License",
+  "author": "Liang-Chi Hsieh",
+  "name": "viirya-zookeeper",
+  "dependencies": [
+    {
+      "version_requirement": "0.0.1",
+      "name": "viirya/java"
+    }
+  ]
+}
