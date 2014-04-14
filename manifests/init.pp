@@ -19,16 +19,17 @@ class zookeeper ($server_id) {
 		home => "${zookeeper::params::zookeeper_user_path}",
 		require => Group["${zookeeper::params::zookeeper_group}"],
 	}
-	
-    file { "${zookeeper::params::zookeeper_user_path}/.bashrc":
-    	ensure => present,
-    	owner => "${zookeeper::params::zookeeper_user}",
-    	group => "${zookeeper::params::zookeeper_group}",
-    	alias => "${zookeeper::params::zookeeper_user}-bashrc",
-    	content => template("zookeeper/home/bashrc.erb"),
-    	require => [ User["${zookeeper::params::zookeeper_user}"], File["${zookeeper::params::zookeeper_user}-home"] ]
+
+    exec { "set zookeeper path":
+        command => "echo 'export PATH=${zookeeper::params::zookeeper_base}/zookeeper/bin:\$PATH' >> ${zookeeper::params::zookeeper_user_path}/.bashrc",
+        alias => "set-zookeeperpath",
+        user => "${zookeeper::params::zookeeper_user}",
+        #before => Exec["set-zookeeperhome"],
+        path    => ["/bin", "/usr/bin", "/usr/sbin"],
+        onlyif => "test 0 -eq $(grep -c '${zookeeper::params::zookeeper_base}/zookeeper/bin' ${zookeeper::params::zookeeper_user_path}/.bashrc)",
+        require => [ User["${zookeeper::params::zookeeper_user}"], File["${zookeeper::params::zookeeper_user}-home"] ],
     }
-    	
+
 	file { "${zookeeper::params::zookeeper_user_path}":
 		ensure => "directory",
 		owner => "${zookeeper::params::zookeeper_user}",
@@ -61,15 +62,27 @@ class zookeeper ($server_id) {
         before => [ File["zoo-cfg"] ]
 	}
  
-	file { "${zookeeper::params::zookeeper_base}/zookeeper-${zookeeper::params::version}.tar.gz":
-		mode => 0644,
-		owner => "${zookeeper::params::zookeeper_user}",
-		group => "${zookeeper::params::zookeeper_group}",
-		source => "puppet:///modules/zookeeper/zookeeper-${zookeeper::params::version}.tar.gz",
-		alias => "zookeeper-source-tgz",
-		before => Exec["untar-zookeeper"],
-		require => File["zookeeper-base"]
-	}
+    exec { "download ${zookeeper::params::zookeeper_base}/zookeeper-${zookeeper::params::version}.tar.gz":
+        command => "wget http://apache.stu.edu.tw/zookeeper/zookeeper-${zookeeper::params::version}/zookeeper-${zookeeper::params::version}.tar.gz",
+        cwd => "${zookeeper::params::zookeeper_base}",
+        alias => "download-zookeeper",
+        user => "${zookeeper::params::zookeeper_user}",
+        before => Exec["untar-zookeeper"],
+        require => File["zookeeper-base"],
+        path    => ["/bin", "/usr/bin", "/usr/sbin"],
+        creates => "${zookeeper::params::zookeeper_base}/zookeeper-${zookeeper::params::version}.tar.gz",
+    }
+
+    file { "${zookeeper::params::zookeeper_base}/zookeeper-${zookeeper::params::version}.tar.gz":
+        mode => 0644,
+        ensure => present,
+        owner => "${zookeeper::params::zookeeper_user}",
+        group => "${zookeeper::params::zookeeper_group}",
+        alias => "zookeeper-source-tgz",
+        before => Exec["untar-zookeeper"],
+        require => [File["zookeeper-base"], Exec["download-zookeeper"]],
+    }
+
 	
 	exec { "untar zookeeper-${zookeeper::params::version}.tar.gz":
 		command => "tar xfvz zookeeper-${zookeeper::params::version}.tar.gz",

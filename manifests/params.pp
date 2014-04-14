@@ -5,7 +5,7 @@ class zookeeper::params {
 	include java::params
 
 	$version = $::hostname ? {
-		default			=> "3.4.5",
+		default			=> "3.4.6",
 	}
 
  	$zookeeper_user = $::hostname ? {
@@ -17,7 +17,7 @@ class zookeeper::params {
 	}
         
 	$servers = $::hostname ? {
-		default			=> ["server1", "server2", "server3"] 
+		default			=> ["localhost"] 
 	}
  
 	$java_home = $::hostname ? {
