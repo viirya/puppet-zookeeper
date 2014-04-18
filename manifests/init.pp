@@ -21,14 +21,25 @@ class zookeeper ($server_id) {
     }
 
     exec { "set zookeeper path":
-        command => "echo 'export PATH=${zookeeper::params::zookeeper_base}/zookeeper/bin:\$PATH' >> ${zookeeper::params::zookeeper_user_path}/.bashrc",
+        command => "echo 'export PATH=${zookeeper::params::zookeeper_base}/zookeeper/bin:\$PATH' >> /etc/profile.d/hadoop.sh",
         alias => "set-zookeeperpath",
-        user => "${zookeeper::params::zookeeper_user}",
+        user => "root",
         #before => Exec["set-zookeeperhome"],
         path    => ["/bin", "/usr/bin", "/usr/sbin"],
-        onlyif => "test 0 -eq $(grep -c '${zookeeper::params::zookeeper_base}/zookeeper/bin' ${zookeeper::params::zookeeper_user_path}/.bashrc)",
+        onlyif => "test 0 -eq $(grep -c '${zookeeper::params::zookeeper_base}/zookeeper/bin' /etc/profile.d/hadoop.sh)",
         require => [ User["${zookeeper::params::zookeeper_user}"], File["${zookeeper::params::zookeeper_user}-home"] ],
     }
+
+
+    #exec { "set zookeeper path":
+    #    command => "echo 'export PATH=${zookeeper::params::zookeeper_base}/zookeeper/bin:\$PATH' >> ${zookeeper::params::zookeeper_user_path}/.bashrc",
+    #    alias => "set-zookeeperpath",
+    #    user => "${zookeeper::params::zookeeper_user}",
+    #    #before => Exec["set-zookeeperhome"],
+    #    path    => ["/bin", "/usr/bin", "/usr/sbin"],
+    #    onlyif => "test 0 -eq $(grep -c '${zookeeper::params::zookeeper_base}/zookeeper/bin' ${zookeeper::params::zookeeper_user_path}/.bashrc)",
+    #    require => [ User["${zookeeper::params::zookeeper_user}"], File["${zookeeper::params::zookeeper_user}-home"] ],
+    #}
 
     file { "${zookeeper::params::zookeeper_user_path}":
         ensure => "directory",
