@@ -1,0 +1,24 @@
+
+<% if scope.lookupvar('zookeeper::params::kerberos_mode') == "yes" %>
+
+Server {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab="<%= scope.lookupvar('zookeeper::params::keytab_path') %>/zookeeper.service.keytab"
+  storeKey=true
+  useTicketCache=false
+  principal="zookeeper/<%= @fqdn %>@<%= scope.lookupvar('zookeeper::params::kerberos_realm') %>";
+};
+
+Client {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab="<%= scope.lookupvar('zookeeper::params::keytab_path') %>/zkcli.service.keytab"
+  storeKey=true
+  useTicketCache=false
+  principal="zkcli/<%= @fqdn %>@<%= scope.lookupvar('zookeeper::params::kerberos_realm') %>";
+};
+
+
+<% end %>
+

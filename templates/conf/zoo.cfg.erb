@@ -27,3 +27,11 @@ clientPort=2181
 <% scope.lookupvar('zookeeper::params::servers').each do |var| -%>
 server.<%= server_id = server_id + 1%>=<%= var %>:2888:3888
 <% end -%>
+
+<% if scope.lookupvar('zookeeper::params::kerberos_mode') == "yes" %>
+
+authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+jaasLoginRenew=3600000
+
+<% end %>
+
