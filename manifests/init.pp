@@ -13,7 +13,7 @@ class zookeeper ($server_id) {
         ensure => present,
         comment => "Zookeeper",
         password => "!!",
-        uid => "800",
+        #uid => "800",
         gid => "800",
         shell => "/bin/bash",
         home => "${zookeeper::params::zookeeper_user_path}",
