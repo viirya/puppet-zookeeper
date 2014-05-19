@@ -23,6 +23,28 @@ define zookeeperkeytab {
     }
 }
  
+define zkcliprinciple {
+    exec { "create Zookeeper Client principle ${name}":
+        command => "kadmin.local -q 'addprinc -randkey zkcli/$name@${zookeeper::params::kerberos_realm}'",
+        user => "root",
+        group => "root",
+        path    => ["/usr/sbin", "/usr/kerberos/sbin", "/usr/bin"],
+        alias => "add-princ-zkcli-${name}",
+        onlyif => "test ! -e ${zookeeper::params::keytab_path}/${name}.zkcli.service.keytab",
+    }
+}
+ 
+define zkclikeytab {
+    exec { "create Zookeeper Client keytab ${name}":
+        command => "kadmin.local -q 'ktadd -k ${zookeeper::params::keytab_path}/${name}.zkcli.service.keytab zkcli/$name@${zookeeper::params::kerberos_realm}'",
+        user => "root",
+        group => "root",
+        path    => ["/usr/sbin", "/usr/kerberos/sbin", "/usr/bin"],
+        onlyif => "test ! -e ${zookeeper::params::keytab_path}/${name}.zkcli.service.keytab",
+        alias => "create-keytab-zkcli-${name}",
+        require => [ Exec["add-princ-zkcli-${name}"] ],
+    }
+}
 class zookeeper::cluster::kerberos {
 
     require zookeeper::params
@@ -44,7 +66,15 @@ class zookeeper::cluster::kerberos {
         zookeeperkeytab { $zookeeper::params::servers: 
             require => File["keytab-path"],
         }
-
+ 
+        zkcliprinciple { $zookeeper::params::servers: 
+            require => File["keytab-path"],
+        }
+ 
+        zkclikeytab { $zookeeper::params::servers: 
+            require => File["keytab-path"],
+        }
+ 
     } 
 }
 

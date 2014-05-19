@@ -177,7 +177,7 @@ class zookeeper ($server_id) {
         mode => "644",
         alias => "zoo-cfg",
         require => File["zookeeper-app-dir"],
-        content => template("zookeeper/conf/zoo.cfg"),
+        content => template("zookeeper/conf/zoo.cfg.erb"),
     }
 
     file { "${zookeeper::params::zookeeper_data_path}/myid":
@@ -208,6 +208,35 @@ class zookeeper ($server_id) {
             require => File["keytab-path"],
         }
  
+        file { "${zookeeper::params::keytab_path}/zkcli.service.keytab":
+            ensure => present,
+            owner => "root",
+            group => "${zookeeper::params::zookeeper_group}",
+            mode => "440",
+            source => "puppet:///modules/zookeeper/keytab/${fqdn}.zkcli.service.keytab",
+            require => File["keytab-path"],
+        }
+ 
+        file { "${zookeeper::params::zookeeper_base}/zookeeper-${zookeeper::params::version}/conf/jaas.conf":
+            owner => "${zookeeper::params::zookeeper_user}",
+            group => "${zookeeper::params::zookeeper_group}",
+            mode => "644",
+            alias => "jaas-cfg",
+            require => File["zookeeper-app-dir"],
+            content => template("zookeeper/conf/jaas.conf.erb"),
+        }
+        
+        
+        file { "${zookeeper::params::zookeeper_base}/zookeeper-${zookeeper::params::version}/conf/java.env":
+            owner => "${zookeeper::params::zookeeper_user}",
+            group => "${zookeeper::params::zookeeper_group}",
+            mode => "644",
+            alias => "java-env",
+            require => File["zookeeper-app-dir"],
+            content => template("zookeeper/conf/java.env.erb"),
+        }
+
+
     }
 
 }
