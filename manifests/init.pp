@@ -1,5 +1,5 @@
 # /etc/puppet/modules/zookeeper/manafests/init.pp
-
+ 
 class zookeeper ($server_id) {
 
     require zookeeper::params
@@ -48,6 +48,52 @@ class zookeeper ($server_id) {
         alias => "${zookeeper::params::zookeeper_user}-home",
         require => [ User["${zookeeper::params::zookeeper_user}"], Group["${zookeeper::params::zookeeper_group}"] ]
     }
+
+ 
+    file { "${zookeeper::params::zookeeper_user_path}/.ssh/":
+        owner => "${zookeeper::params::zookeeper_user}",
+        group => "${zookeeper::params::zookeeper_group}",
+        mode => "700",
+        ensure => "directory",
+        alias => "${zookeeper::params::zookeeper_user}-ssh-dir",
+    }
+
+    file { "${zookeeper::params::zookeeper_user_path}/.ssh/id_rsa.pub":
+        ensure => present,
+        owner => "${zookeeper::params::zookeeper_user}",
+        group => "${zookeeper::params::zookeeper_group}",
+        mode => "644",
+        source => "puppet:///modules/zookeeper/ssh/id_rsa.pub",
+        require => File["${zookeeper::params::zookeeper_user}-ssh-dir"],
+    }
+
+    file { "${zookeeper::params::zookeeper_user_path}/.ssh/id_rsa":
+        ensure => present,
+        owner => "${zookeeper::params::zookeeper_user}",
+        group => "${zookeeper::params::zookeeper_group}",
+        mode => "600",
+        source => "puppet:///modules/zookeeper/ssh/id_rsa",
+        require => File["${zookeeper::params::zookeeper_user}-ssh-dir"],
+    }
+
+    file { "${zookeeper::params::zookeeper_user_path}/.ssh/config":
+        ensure => present,
+        owner => "${zookeeper::params::zookeeper_user}",
+        group => "${zookeeper::params::zookeeper_group}",
+        mode => "600",
+        source => "puppet:///modules/zookeeper/ssh/config",
+        require => File["${zookeeper::params::zookeeper_user}-ssh-dir"],
+    }
+
+    file { "${zookeeper::params::zookeeper_user_path}/.ssh/authorized_keys":
+        ensure => present,
+        owner => "${zookeeper::params::zookeeper_user}",
+        group => "${zookeeper::params::zookeeper_group}",
+        mode => "644",
+        source => "puppet:///modules/zookeeper/ssh/id_rsa.pub",
+        require => File["${zookeeper::params::zookeeper_user}-ssh-dir"],
+    }
+ 
  
     file {"${zookeeper::params::zookeeper_data_path}":
         ensure => "directory",
@@ -142,5 +188,26 @@ class zookeeper ($server_id) {
         require => File["zookeeper-data-dir"],
         alias => "zookeeper-myid",
     }
-    
+ 
+    if $zookeeper::params::kerberos_mode == "yes" {
+ 
+        file { "${zookeeper::params::keytab_path}":
+            ensure => "directory",
+            owner => "root",
+            group => "${zookeeper::params::zookeeper_group}",
+            mode => "750",
+            alias => "keytab-path",
+        }
+ 
+        file { "${zookeeper::params::keytab_path}/zookeeper.service.keytab":
+            ensure => present,
+            owner => "root",
+            group => "${zookeeper::params::zookeeper_group}",
+            mode => "440",
+            source => "puppet:///modules/zookeeper/keytab/${fqdn}.zookeeper.service.keytab",
+            require => File["keytab-path"],
+        }
+ 
+    }
+
 }

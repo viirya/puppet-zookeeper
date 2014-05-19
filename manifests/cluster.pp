@@ -1,5 +1,53 @@
 # /etc/puppet/modules/zookeeper/manifests/master.pp
 
+define zookeeperprinciple {
+    exec { "create Zookeeper principle ${name}":
+        command => "kadmin.local -q 'addprinc -randkey zookeeper/$name@${zookeeper::params::kerberos_realm}'",
+        user => "root",
+        group => "root",
+        path    => ["/usr/sbin", "/usr/kerberos/sbin", "/usr/bin"],
+        alias => "add-princ-zookeeper-${name}",
+        onlyif => "test ! -e ${zookeeper::params::keytab_path}/${name}.zookeeper.service.keytab",
+    }
+}
+ 
+define zookeeperkeytab {
+    exec { "create Zookeeper keytab ${name}":
+        command => "kadmin.local -q 'ktadd -k ${zookeeper::params::keytab_path}/${name}.zookeeper.service.keytab zookeeper/$name@${zookeeper::params::kerberos_realm}'",
+        user => "root",
+        group => "root",
+        path    => ["/usr/sbin", "/usr/kerberos/sbin", "/usr/bin"],
+        onlyif => "test ! -e ${zookeeper::params::keytab_path}/${name}.zookeeper.service.keytab",
+        alias => "create-keytab-zookeeper-${name}",
+        require => [ Exec["add-princ-zookeeper-${name}"] ],
+    }
+}
+ 
+class zookeeper::cluster::kerberos {
+
+    require zookeeper::params
+ 
+    if $zookeeper::params::kerberos_mode == "yes" {
+
+        file { "${zookeeper::params::keytab_path}":
+            ensure => "directory",
+            owner => "root",
+            group => "${zookeeper::params::zookeeper_group}",
+            mode => "750",
+            alias => "keytab-path",
+        }
+ 
+        zookeeperprinciple { $zookeeper::params::servers: 
+            require => File["keytab-path"],
+        }
+ 
+        zookeeperkeytab { $zookeeper::params::servers: 
+            require => File["keytab-path"],
+        }
+
+    } 
+}
+
 class zookeeper::cluster ($server_id) {
 
     require zookeeper::params
