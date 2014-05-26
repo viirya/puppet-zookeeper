@@ -17,7 +17,7 @@ class zookeeper::params {
 	}
         
 	$servers = $::hostname ? {
-		default			=> ["localhost"] 
+		default			=> ["vm1.openstacklocal", "vm2.openstacklocal", "vm3.openstacklocal", "vm4.openstacklocal"] 
 	}
  
 	$java_home = $::hostname ? {

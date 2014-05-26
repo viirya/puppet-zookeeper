@@ -31,6 +31,15 @@ class zookeeper ($server_id) {
     }
 
 
+    file { "${zookeeper::params::zookeeper_user_path}/.bashrc":        
+        ensure => present,
+        owner => "${zookeeper::params::zookeeper_user}",
+        group => "${zookeeper::params::zookeeper_group}",
+        alias => "${zookeeper::params::zookeeper_user}-bashrc",
+        content => template("zookeeper/home/bashrc.erb"),
+        require => User["${zookeeper::params::zookeeper_user}"]    
+    }
+
     #exec { "set zookeeper path":
     #    command => "echo 'export PATH=${zookeeper::params::zookeeper_base}/zookeeper/bin:\$PATH' >> ${zookeeper::params::zookeeper_user_path}/.bashrc",
     #    alias => "set-zookeeperpath",
@@ -120,7 +129,7 @@ class zookeeper ($server_id) {
     }
  
     exec { "download ${zookeeper::params::zookeeper_base}/zookeeper-${zookeeper::params::version}.tar.gz":
-        command => "wget http://apache.stu.edu.tw/zookeeper/zookeeper-${zookeeper::params::version}/zookeeper-${zookeeper::params::version}.tar.gz",
+        command => "wget http://apache.cdpa.nsysu.edu.tw/zookeeper/zookeeper-${zookeeper::params::version}/zookeeper-${zookeeper::params::version}.tar.gz",
         cwd => "${zookeeper::params::zookeeper_base}",
         alias => "download-zookeeper",
         user => "${zookeeper::params::zookeeper_user}",
