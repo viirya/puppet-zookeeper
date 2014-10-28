@@ -92,6 +92,7 @@ class zookeeper::cluster ($server_id) {
         cwd => "${zookeeper::params::zookeeper_base}/zookeeper-${zookeeper::params::version}/bin",
         path    => ["/bin", "/usr/bin", "${zookeeper::params::zookeeper_base}/zookeeper-${zookeeper::params::version}/bin", "${java::params::java_base}/jdk${java::params::java_version}/bin"],
         require => [ File["zookeeper-myid"], File["zoo-cfg"] ],
+        unless  => "pgrep -f org.apache.zookeeper.server.quorum.QuorumPeerMain",
     }
  
 }
