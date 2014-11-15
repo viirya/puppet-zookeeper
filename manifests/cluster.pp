@@ -85,7 +85,7 @@ class zookeeper::cluster ($server_id) {
     class {'zookeeper':
         server_id => $server_id,
     }
-
+    ->
     exec { "Launch zookeeper":
         command => "./zkServer.sh start",
         user => "${zookeeper::params::zookeeper_user}",
